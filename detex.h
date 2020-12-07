@@ -1023,7 +1023,7 @@ static DETEX_INLINE_ONLY int detexDivideMinus639To639By5(int value) {
  *	detexPixel64GetR16, detexPixel64GetG16, detexPixel64GetB16
  */
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ || !defined(__BYTE_ORDER__)
+#if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
 static DETEX_INLINE_ONLY uint32_t detexPack32RGBA8(int r, int g, int b, int a) {
 	return (uint32_t)r | ((uint32_t)g << 8) | ((uint32_t)b << 16) |

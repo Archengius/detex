@@ -22,7 +22,9 @@ SET(LIBRARY_SOURCES
         ktx.c
         misc.c
         raw.c
-        texture.c)
+        texture.c
+        dds.c
+        clamp.c)
 
 if (${DETEX_LIBRARY_TYPE} EQUAL "SHARED")
     add_compile_definitions(DETEX_SHARED=1)
