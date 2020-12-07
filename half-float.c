@@ -20,7 +20,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <math.h>
 #include <float.h>
 #include <fenv.h>
+
+#if DETEX_ENABLE_SYNCHRONIZATION
 #include <pthread.h>
+#endif
 
 #include "detex.h"
 #include "half-float.h"
@@ -268,7 +271,14 @@ void * DETEX_RESTRICT source, int numel)
 
 // Precalculated half-float table management.
 
+#if DETEX_ENABLE_SYNCHRONIZATION
 float *detex_half_float_table = NULL;
+#else
+//With synchronization disabled, half float table will be thread local to avoid threading issues
+//I haven't found a better way without including a ton of windows-specific libraries,
+//but technically 256 kbytes per thread shouldn't be too much on modern hardware
+float DETEX_THREAD_LOCAL *detex_half_float_table = NULL;
+#endif
 
 static void detexCalculateHalfFloatTable() {
 	detex_half_float_table = (float *)malloc(65536 * sizeof(float));
@@ -279,13 +289,19 @@ static void detexCalculateHalfFloatTable() {
 	free(hf_buffer);
 }
 
+#if DETEX_ENABLE_SYNCHRONIZATION
 static pthread_mutex_t mutex_half_float_table = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 void detexValidateHalfFloatTable() {
+#if DETEX_ENABLE_SYNCHRONIZATION
 	pthread_mutex_lock(&mutex_half_float_table);
+#endif
 	if (detex_half_float_table == NULL)
 		detexCalculateHalfFloatTable();
+#if DETEX_ENABLE_SYNCHRONIZATION
 	pthread_mutex_unlock(&mutex_half_float_table);
+#endif
 }
 
 // Conversion functions.

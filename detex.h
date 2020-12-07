@@ -72,7 +72,27 @@ __BEGIN_DECLS
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DETEX_INLINE_ONLY __attribute__((always_inline)) inline
+/** Use __forceinline to force inlining on win32 */
+#if defined _WIN32 || defined __CYGWIN__
+    #define DETEX_INLINE_ONLY __forceinline
+#else
+    #define DETEX_INLINE_ONLY __attribute__((always_inline)) inline
+#endif
+
+/** Use __declspec(thread) instead of __thread on win32 */
+#if defined _WIN32 || defined __CYGWIN__
+    #define DETEX_THREAD_LOCAL __declspec(thread)
+#else
+    #define DETEX_THREAD_LOCAL __thread
+#endif
+
+/** Disable synchronization primitives on win32 */
+#if defined _WIN32 || defined __CYGWIN__
+    #define DETEX_ENABLE_SYNCHRONIZATION 0
+#else
+    #define DETEX_ENABLE_SYNCHRONIZATION 1
+#endif
+
 #define DETEX_RESTRICT __restrict
 
 /* Maximum uncompressed block size in bytes. */

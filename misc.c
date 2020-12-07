@@ -20,10 +20,18 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
+#include <string.h>
 #include <stdarg.h>
 
 #include "detex.h"
+
+/** Use different function for case insensitive compare on msvc */
+#if defined _WIN32 || defined __CYGWIN__
+#define DETEX_STRING_CMP_CASE_INSENSITIVE _stricmp
+#else
+#include <strings.h>
+    #define DETEX_STRING_CMP_CASE_INSENSITIVE strcasecmp
+#endif
 
 // Generate bit mask from bit0 to bit1 (inclusive).
 static DETEX_INLINE_ONLY uint64_t GenerateMask(int bit0, int bit1) {
@@ -72,18 +80,20 @@ end:
 
 // Error handling.
 
-static __thread char *detex_error_message = NULL;
+static DETEX_THREAD_LOCAL char *detex_error_message = NULL;
 
 void detexSetErrorMessage(const char *format, ...) {
 	if (detex_error_message != NULL)
 		free(detex_error_message);
 	va_list args;
 	va_start(args, format);
-	char *message;
-	// Allocate and set message.
-	int r = vasprintf(&message, format, args);
+    // Allocate and set message.
+    //Assume that format length + 256 characters buffer is enough for most cases
+    int message_length = (int) strlen(format) + 256;
+	char* message = malloc(message_length);
+    int r = snprintf(message, message_length, format, args);
 	if (r < 0)
-		message = strdup("detexSetErrorMessage: vasprintf returned error");
+		message = _strdup("detexSetErrorMessage: vasprintf returned error");
 	va_end(args);
 	detex_error_message = message;
 }
@@ -98,9 +108,9 @@ const char *detexGetErrorMessage() {
 bool detexLoadTextureFileWithMipmaps(const char *filename, int max_mipmaps, detexTexture ***textures_out,
 int *nu_levels_out) {
 	int filename_length = strlen(filename);
-	if (filename_length > 4 && strncasecmp(filename + filename_length - 4, ".ktx", 4) == 0)
+	if (filename_length > 4 && DETEX_STRING_CMP_CASE_INSENSITIVE(filename + filename_length - 4, ".ktx") == 0)
 		return detexLoadKTXFileWithMipmaps(filename, max_mipmaps, textures_out, nu_levels_out);
-	else if (filename_length > 4 && strncasecmp(filename + filename_length - 4, ".dds", 4) == 0)
+	else if (filename_length > 4 && DETEX_STRING_CMP_CASE_INSENSITIVE(filename + filename_length - 4, ".dds") == 0)
 		return detexLoadDDSFileWithMipmaps(filename, max_mipmaps, textures_out, nu_levels_out);
 	else {
 		detexSetErrorMessage("detexLoadTextureFileWithMipmaps: Do not recognize filename extension");

@@ -29,11 +29,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 // Gamma/HDR parameters.
 
-__thread float detex_gamma = 1.0f;
-__thread float detex_gamma_range_min = 0.0f;
-__thread float detex_gamma_range_max = 1.0f;
-__thread float *detex_gamma_corrected_half_float_table = NULL;
-__thread float detex_corrected_half_float_table_gamma;
+DETEX_THREAD_LOCAL float detex_gamma = 1.0f;
+DETEX_THREAD_LOCAL float detex_gamma_range_min = 0.0f;
+DETEX_THREAD_LOCAL float detex_gamma_range_max = 1.0f;
+DETEX_THREAD_LOCAL float *detex_gamma_corrected_half_float_table = NULL;
+DETEX_THREAD_LOCAL float detex_corrected_half_float_table_gamma;
 
 void detexSetHDRParameters(float gamma, float range_min, float range_max) {
 	detex_gamma = gamma;

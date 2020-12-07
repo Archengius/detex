@@ -19,7 +19,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
+
+/** Use different function for case insensitive compare on msvc */
+#if defined _WIN32 || defined __CYGWIN__
+    #define DETEX_STRING_CMP_CASE_INSENSITIVE _stricmp
+#else
+    #include <strings.h>
+    #define DETEX_STRING_CMP_CASE_INSENSITIVE strcasecmp
+#endif
 
 #include "detex.h"
 #include "file-info.h"
@@ -200,7 +207,7 @@ const detexTextureFileInfo *detexLookupTextureFormatFileInfo(uint32_t texture_fo
 // Look-up texture file info for texture description.
 const detexTextureFileInfo *detexLookupTextureDescription(const char *s) {
 	for (int i = 0; i < DETEX_NU_TEXTURE_INFO_ENTRIES; i++)
-		if (strcasecmp(texture_info[i].text1, s) == 0 || strcasecmp(texture_info[i].text2, s) == 0)
+		if (DETEX_STRING_CMP_CASE_INSENSITIVE(texture_info[i].text1, s) == 0 || DETEX_STRING_CMP_CASE_INSENSITIVE(texture_info[i].text2, s) == 0)
 			return &texture_info[i];
 	return NULL;
 }

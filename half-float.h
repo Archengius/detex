@@ -24,7 +24,11 @@ void detexConvertNormalizedHalfFloatToUInt16(uint16_t *buffer, int n);
 
 void detexConvertNormalizedFloatToUInt16(float *source_buffer, int n, uint16_t *target_buffer);
 
+#if DETEX_ENABLE_SYNCHRONIZATION
 extern float *detex_half_float_table;
+#else
+extern float DETEX_THREAD_LOCAL *detex_half_float_table;
+#endif
 
 void detexValidateHalfFloatTable();
 
